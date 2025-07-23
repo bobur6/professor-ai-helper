@@ -1,0 +1,28 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+PyMuPDF
+
+# Database
+SQLAlchemy
+psycopg2-binary
+
+# Data Validation & Schemas
+pydantic[email]
+
+# Authentication
+python-jose[cryptography]
+bcrypt==3.2.2
+passlib[bcrypt]==1.7.4
+
+# AI Service
+google-generativeai
+
+# File Handling
+python-multipart
+pandas
+openpyxl
+
+# Environment Variables
+python-dotenv
+python-docx
