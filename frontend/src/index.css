@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Modal styles */
+.modal {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  @apply bg-black bg-opacity-50;
+  @apply opacity-0 pointer-events-none;
+  @apply transition-opacity duration-200;
+}
+
+.modal[open] {
+  @apply opacity-100 pointer-events-auto;
+}
+
+.modal-box {
+  @apply relative max-w-lg w-full mx-4;
+  @apply bg-white rounded-lg shadow-xl;
+  @apply transform scale-95 transition-transform duration-200;
+}
+
+.modal[open] .modal-box {
+  @apply scale-100;
+}
+
+.modal-backdrop {
+  @apply absolute inset-0;
+}
+
+.modal-action {
+  @apply flex justify-end gap-2 mt-6;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-ghost {
+  @apply text-gray-600 hover:bg-gray-100;
+}

@@ -60,7 +60,14 @@ class TeachingAssistant:
 
     def analyze_document_chat(self, document_text: str, query: str, chat_history: List[Dict] = []) -> str:
         """Analyzes document content to answer a query in a chat context."""
-        history_str = "\n".join([f"{h['role']}: {h['content']}" for h in chat_history])
+        # Безопасная обработка истории чата
+        history_str = ""
+        if chat_history:
+            try:
+                history_str = "\n".join([f"{h.get('role', 'user')}: {h.get('content', '')}" for h in chat_history if h.get('content')])
+            except Exception as e:
+                print(f"Error processing chat history: {e}")
+                history_str = ""
         
         # Если есть документ, используем его как контекст
         if document_text and document_text.strip():

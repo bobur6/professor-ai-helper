@@ -531,16 +531,7 @@ function DocumentView() {
               >
                 AI Assistant
               </button>
-              <button
-                onClick={() => setActiveTab(2)}
-                className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                  activeTab === 2
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                AI Response
-              </button>
+
             </nav>
           </div>
           
@@ -576,36 +567,7 @@ function DocumentView() {
               </div>
             </div>
             
-            {/* AI Response Panel */}
-            <div 
-              className={`h-full flex flex-col ${activeTab !== 2 ? 'hidden' : ''}`}
-              style={{ height: 'calc(100vh - 200px)' }}
-            >
-              <div className="flex-1 overflow-hidden flex flex-col">
-                {aiResponse && (
-                  <div>
-                    {aiResponseType === 'quiz' && (
-                      <div className="p-4">
-                        <h3 className="text-lg font-bold mb-4">Quiz</h3>
-                        <p className="text-gray-600">Quiz content would appear here</p>
-                      </div>
-                    )}
-                    {aiResponseType === 'questions' && (
-                      <div className="p-4">
-                        <h3 className="text-lg font-bold mb-4">Questions</h3>
-                        <p className="text-gray-600">Questions would appear here</p>
-                      </div>
-                    )}
-                    {aiResponseType === 'summary' && (
-                      <div className="p-4">
-                        <h3 className="text-lg font-bold mb-4">Summary</h3>
-                        <p className="text-gray-600">Summary would appear here</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

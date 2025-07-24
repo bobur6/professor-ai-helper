@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { getDocuments, uploadDocument } from '../services/api';
 import DocumentList from '../components/DocumentList';
 import QuickChatMode from '../components/QuickChatMode';
-import ModeToggle from '../components/ModeToggle';
-import RecentChats from '../components/RecentChats';
 import { toast } from 'react-toastify';
 
 function Dashboard() {
@@ -12,7 +10,22 @@ function Dashboard() {
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
-  const [mode, setMode] = useState('quick'); // 'quick' or 'full'
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  
+  // Load mode from localStorage, default to 'quick'
+  const [mode, setMode] = useState(() => {
+    return localStorage.getItem('dashboardMode') || 'quick';
+  });
+
+  // Save mode to localStorage when it changes and force re-render
+  const handleModeChange = (newMode) => {
+    setMode(newMode);
+    localStorage.setItem('dashboardMode', newMode);
+    // Force re-render by updating state
+    setTimeout(() => {
+      setMode(newMode);
+    }, 0);
+  };
 
   const fetchDocuments = async () => {
     try {
@@ -81,22 +94,8 @@ function Dashboard() {
   // Quick mode render
   if (mode === 'quick') {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between py-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Professor AI Helper</h1>
-                <p className="text-sm text-gray-600">Быстрое общение с документами</p>
-              </div>
-              <ModeToggle mode={mode} onChange={setMode} />
-            </div>
-          </div>
-        </div>
-        
-        <div className="h-[calc(100vh-80px)]">
-          <QuickChatMode onBackToFull={() => setMode('full')} />
-        </div>
+      <div className="h-[calc(100vh-64px)]">
+        <QuickChatMode onBackToFull={() => handleModeChange('full')} />
       </div>
     );
   }
@@ -104,24 +103,46 @@ function Dashboard() {
   // Full mode render
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="mt-1 text-lg text-gray-600">Управление документами и взаимодействие с ИИ</p>
-            </div>
-            <ModeToggle mode={mode} onChange={setMode} />
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Загрузка документов</h2>
+            {/* Documents List */}
+            {loading ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-gray-600">Загружаем документы...</span>
+                </div>
+              </div>
+            ) : (
+              <DocumentList documents={documents} onDeleteDocument={handleDeleteDocument} />
+            )}
+
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600">{error}</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Upload Button - Fixed at bottom right */}
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-colors z-50"
+          title="Загрузить документ"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+
+        {/* Upload Modal */}
+        {showUploadModal && (
+          <div className="modal">
+            <div className="modal-box bg-white rounded-xl shadow-xl max-w-md">
+              <h3 className="font-bold text-lg mb-4">Загрузить документ</h3>
               
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-400 transition-colors">
                 <div className="flex flex-col items-center space-y-4">
@@ -132,7 +153,6 @@ function Dashboard() {
                   </div>
                   
                   <div className="text-center">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Загрузите документ</h3>
                     <p className="text-gray-600 mb-4">Поддерживаются PDF, DOC, DOCX, TXT файлы</p>
                   </div>
                   
@@ -145,9 +165,12 @@ function Dashboard() {
                   />
                   
                   <button 
-                    onClick={handleUpload} 
+                    onClick={async () => {
+                      await handleUpload();
+                      setShowUploadModal(false);
+                    }} 
                     disabled={!file || uploading} 
-                    className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="w-full inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     {uploading ? (
                       <>
@@ -163,55 +186,19 @@ function Dashboard() {
                   </button>
                 </div>
               </div>
-
-              {error && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600">{error}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Documents List */}
-            <div className="mt-8">
-              {loading ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                    <span className="ml-3 text-gray-600">Загружаем документы...</span>
-                  </div>
-                </div>
-              ) : (
-                <DocumentList documents={documents} onDeleteDocument={handleDeleteDocument} />
-              )}
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <RecentChats documents={documents} />
-            
-            {/* Quick Stats */}
-            <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Статистика</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Всего документов</span>
-                  <span className="font-semibold text-gray-900">{documents.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Загружено сегодня</span>
-                  <span className="font-semibold text-gray-900">
-                    {documents.filter(doc => {
-                      const today = new Date().toDateString();
-                      const docDate = new Date(doc.uploaded_at).toDateString();
-                      return today === docDate;
-                    }).length}
-                  </span>
-                </div>
+              
+              <div className="modal-action">
+                <button 
+                  onClick={() => setShowUploadModal(false)}
+                  className="btn btn-ghost"
+                >
+                  Отмена
+                </button>
               </div>
             </div>
+            <div className="modal-backdrop" onClick={() => setShowUploadModal(false)}></div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
