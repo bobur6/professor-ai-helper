@@ -28,6 +28,9 @@ function Navbar({ mode, onModeChange }) {
             {token ? (
               <>
                 <div className="flex items-center space-x-4">
+                  {showModeToggle && mode && onModeChange && (
+                    <ModeToggle mode={mode} onChange={onModeChange} />
+                  )}
                   <Link to="/dashboard" className="text-gray-700 hover:text-indigo-600">
                     Дашборд
                   </Link>
@@ -35,10 +38,6 @@ function Navbar({ mode, onModeChange }) {
                     Мои классы
                   </Link>
                 </div>
-                
-                {showModeToggle && mode && onModeChange && (
-                  <ModeToggle mode={mode} onChange={onModeChange} />
-                )}
                 
                 <button
                   onClick={handleLogout}

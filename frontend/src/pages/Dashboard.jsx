@@ -4,28 +4,21 @@ import DocumentList from '../components/DocumentList';
 import QuickChatMode from '../components/QuickChatMode';
 import { toast } from 'react-toastify';
 
-function Dashboard() {
+function Dashboard({ mode: propMode, onModeChange: propOnModeChange }) {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   
-  // Load mode from localStorage, default to 'quick'
-  const [mode, setMode] = useState(() => {
-    return localStorage.getItem('dashboardMode') || 'quick';
-  });
-
-  // Save mode to localStorage when it changes and force re-render
-  const handleModeChange = (newMode) => {
-    setMode(newMode);
+  // Use props if available, otherwise fallback to localStorage
+  const mode = propMode || localStorage.getItem('dashboardMode') || 'quick';
+  const handleModeChange = propOnModeChange || ((newMode) => {
     localStorage.setItem('dashboardMode', newMode);
-    // Force re-render by updating state
-    setTimeout(() => {
-      setMode(newMode);
-    }, 0);
-  };
+    window.location.reload(); // Fallback if no prop handler
+  });
 
   const fetchDocuments = async () => {
     try {
@@ -91,6 +84,39 @@ function Dashboard() {
     setFile(null);
   };
 
+  // Drag and drop handlers for modal
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      // Only set dragActive to false if we're leaving the drop zone entirely
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        setDragActive(false);
+      }
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const droppedFile = e.dataTransfer.files[0];
+      // Check file type
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.txt'];
+      const fileExtension = '.' + droppedFile.name.split('.').pop().toLowerCase();
+      
+      if (allowedTypes.includes(fileExtension)) {
+        setFile(droppedFile);
+      } else {
+        toast.error('Поддерживаются только PDF, DOC, DOCX, TXT файлы');
+      }
+    }
+  };
+
   // Quick mode render
   if (mode === 'quick') {
     return (
@@ -140,11 +166,29 @@ function Dashboard() {
 
         {/* Upload Modal */}
         {showUploadModal && (
-          <div className="modal">
+          <div 
+            className="modal" 
+            onClick={(e) => {
+              // Only close if clicking on backdrop, not on modal content
+              if (e.target === e.currentTarget) {
+                setShowUploadModal(false);
+              }
+            }}
+          >
             <div className="modal-box bg-white rounded-xl shadow-xl max-w-md">
               <h3 className="font-bold text-lg mb-4">Загрузить документ</h3>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-indigo-400 transition-colors">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+                  dragActive 
+                    ? 'border-indigo-500 bg-indigo-50' 
+                    : 'border-gray-300 hover:border-indigo-400'
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
                 <div className="flex flex-col items-center space-y-4">
                   <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,6 +198,11 @@ function Dashboard() {
                   
                   <div className="text-center">
                     <p className="text-gray-600 mb-4">Поддерживаются PDF, DOC, DOCX, TXT файлы</p>
+                    {file && (
+                      <p className="text-sm text-indigo-600 font-medium">
+                        Выбран файл: {file.name}
+                      </p>
+                    )}
                   </div>
                   
                   <input 
@@ -165,9 +214,13 @@ function Dashboard() {
                   />
                   
                   <button 
-                    onClick={async () => {
-                      await handleUpload();
-                      setShowUploadModal(false);
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (file) {
+                        await handleUpload();
+                        setShowUploadModal(false);
+                      }
                     }} 
                     disabled={!file || uploading} 
                     className="w-full inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
@@ -189,14 +242,17 @@ function Dashboard() {
               
               <div className="modal-action">
                 <button 
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowUploadModal(false);
+                  }}
                   className="btn btn-ghost"
                 >
                   Отмена
                 </button>
               </div>
             </div>
-            <div className="modal-backdrop" onClick={() => setShowUploadModal(false)}></div>
           </div>
         )}
       </div>

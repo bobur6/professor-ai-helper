@@ -39,7 +39,7 @@ function AppContent() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Dashboard mode={dashboardMode} onModeChange={handleModeChange} />
               </ProtectedRoute>
             }
           />
