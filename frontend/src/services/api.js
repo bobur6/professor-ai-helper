@@ -167,6 +167,7 @@ export const updateGrade = setGrade;
 
 // AI Assistant API calls
 export const queryClassAI = (document_text, query, history = []) => {
+  console.log("Sending AI chat request with document_text length:", document_text ? document_text.length : 0);
   return apiClient.post('/ai/chat', {
     document_text,
     query,

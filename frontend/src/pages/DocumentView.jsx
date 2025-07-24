@@ -269,6 +269,17 @@ function DocumentView() {
         }
         
         console.log('Document data received:', docResponse.data);
+        
+        // Check if document has extracted text content
+        if (!docResponse.data.extracted_text_content) {
+          console.warn("Document has no extracted text content!");
+        } else {
+          console.log("Document text content length:", docResponse.data.extracted_text_content.length);
+          // Log the first 100 characters for debugging
+          console.log("Document text content preview:", 
+            docResponse.data.extracted_text_content.substring(0, 100) + "...");
+        }
+        
         setDocument(docResponse.data);
         setChatHistory([
           {

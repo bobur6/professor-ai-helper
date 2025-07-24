@@ -2,14 +2,36 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Prism as SyntaxHighlighter } from 'prism-react-renderer';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { FiSend, FiCopy, FiCheck, FiLoader } from 'react-icons/fi';
-import { queryClassAI } from '../services/api';
+import { queryClassAI, getDocument } from '../services/api';
 
 function ChatWindow({ documentId, initialHistory = [], onNewMessage }) {
   const [history, setHistory] = useState(initialHistory);
   const [query, setQuery] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [documentText, setDocumentText] = useState('');
+  const [copied, setCopied] = useState('');
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Fetch document content when documentId changes
+  useEffect(() => {
+    const fetchDocumentText = async () => {
+      if (documentId) {
+        try {
+          const response = await getDocument(documentId);
+          if (response.data && response.data.extracted_text_content) {
+            setDocumentText(response.data.extracted_text_content);
+          } else {
+            console.warn("Document has no extracted text content");
+            setDocumentText(""); // Set empty string if no content
+          }
+        } catch (error) {
+          console.error("Failed to fetch document content:", error);
+        }
+      }
+    };
+    fetchDocumentText();
+  }, [documentId]);
 
   // Scroll to bottom when messages change
   const scrollToBottom = useCallback(() => {
@@ -181,6 +203,11 @@ function ChatWindow({ documentId, initialHistory = [], onNewMessage }) {
     e.preventDefault();
     if (!query.trim() || isSending) return;
 
+    // Check if document text is available
+    if (!documentText) {
+      console.warn("No document text available for AI chat");
+    }
+
     const userMessage = {
       id: Date.now(),
       user_query: query,
@@ -194,7 +221,43 @@ function ChatWindow({ documentId, initialHistory = [], onNewMessage }) {
     setIsSending(true);
 
     try {
-      const response = await queryClassAI(documentId, query, history);
+      // Create a simple history array for the backend
+      // Let's simplify the history format to avoid any potential issues
+      const formattedHistory = [];
+      
+      // Only include the most recent messages to keep the context manageable
+      // This helps avoid any potential issues with the history format
+      const recentHistory = history.slice(-3); // Only use the last 3 messages
+      
+      // Ensure each message has both role and content properties
+      for (const msg of recentHistory) {
+        if (msg.user_query) {
+          formattedHistory.push({
+            role: "user",
+            content: msg.user_query
+          });
+        }
+        
+        if (msg.ai_response) {
+          formattedHistory.push({
+            role: "assistant",
+            content: msg.ai_response
+          });
+        }
+      }
+      
+      // Log the formatted history for debugging
+      console.log("Formatted history:", JSON.stringify(formattedHistory));
+      
+      // We don't need to add the current query to history
+      // It will be sent separately as the 'query' parameter
+
+      // Log document text for debugging
+      console.log("Document text length:", documentText ? documentText.length : 0);
+      
+      // Use document text instead of document ID
+      const response = await queryClassAI(documentText || "", query, formattedHistory);
+      
       const aiMessage = {
         ...userMessage,
         ai_response: response.data.message || 'No response from AI.',
