@@ -27,8 +27,7 @@ class TeachingAssistant:
 
     def __init__(self):
         self.system_prompt = """
-        You are an expert AI teaching assistant. Your purpose is to assist educators with various tasks.
-        You must provide responses in the format requested, especially when JSON output is specified.
+        Ты дружелюбный и полезный AI-помощник преподавателя. Отвечай на том языке, на котором задан вопрос. Будь естественным в общении, старайся быть кратким и по делу. Помогай с любыми вопросами, связанными с образованием (включая планирование уроков, проверку работ, генерацию заданий и т.п.), а также не отказывайся от обсуждения других тем, если это уместно.
         """
 
     def _generate_response(self, prompt: str, is_json_output: bool = False) -> str:
@@ -62,15 +61,34 @@ class TeachingAssistant:
     def analyze_document_chat(self, document_text: str, query: str, chat_history: List[Dict] = []) -> str:
         """Analyzes document content to answer a query in a chat context."""
         history_str = "\n".join([f"{h['role']}: {h['content']}" for h in chat_history])
-        prompt = f"""
-        {self.system_prompt}
-        Context: Use the following document text to answer the user's question.
-        Document: "{document_text}"
-        Conversation History:
-        {history_str}
-        User Question: {query}
-        Answer based on the document. If the question is not related, state that.
-        """
+        
+        # Если есть документ, используем его как контекст
+        if document_text and document_text.strip():
+            prompt = f"""
+            {self.system_prompt}
+            
+            У тебя есть доступ к следующему документу:
+            {document_text}
+            
+            История разговора:
+            {history_str}
+            
+            Вопрос пользователя: {query}
+            
+            Отвечай естественно. Если вопрос связан с документом - используй информацию из него. 
+            Если вопрос общий - отвечай на основе своих знаний.
+            """
+        else:
+            # Если документа нет, просто общаемся
+            prompt = f"""
+            {self.system_prompt}
+            
+            История разговора:
+            {history_str}
+            
+            Вопрос пользователя: {query}
+            """
+        
         return self._generate_response(prompt)
 
     def generate_quiz(self, document_text: str, question_count: int, difficulty: str, question_type: str) -> dict:
