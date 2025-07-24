@@ -27,7 +27,7 @@ function Dashboard() {
   // Handle document deletion
   const handleDeleteDocument = (deletedId) => {
     setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== deletedId));
-    toast.success('Document deleted successfully');
+    // Toast notification is already handled in DocumentList component
   };
 
   useEffect(() => {

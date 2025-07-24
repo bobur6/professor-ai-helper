@@ -15,6 +15,7 @@ function DocumentList({ documents = [], onDeleteDocument }) {
           if (typeof onDeleteDocument === 'function') {
             onDeleteDocument(documentId);
           }
+          // Show success toast only once
           toast.success(response.message || 'Document deleted successfully');
         } else {
           throw new Error(response?.message || 'Failed to delete document');
