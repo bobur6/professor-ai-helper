@@ -123,10 +123,8 @@ function ClassDetail() {
                 students: [...(prevDetails.students || []), newStudent].sort((a, b) => a.full_name.localeCompare(b.full_name))
             }));
             setNewStudentName('');
-            toast.success('Студент успешно добавлен');
         } catch (error) {
             console.error('Error adding student:', error);
-            toast.error(`Ошибка при добавлении студента: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -140,10 +138,8 @@ function ClassDetail() {
                 assignments: [...(prevDetails.assignments || []), newAssignment]
             }));
             setNewAssignmentTitle('');
-            toast.success('Задание успешно добавлено');
         } catch (error) {
             console.error('Failed to add assignment:', error);
-            toast.error(`Ошибка при добавлении задания: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -157,10 +153,8 @@ function ClassDetail() {
                     ...prevDetails,
                     students: (prevDetails.students || []).filter(s => s.id !== studentId)
                 }));
-                toast.success('Студент успешно удалён');
             } catch (error) {
                 console.error('Error removing student:', error);
-                toast.error(`Ошибка при удалении студента: ${error.response?.data?.detail || error.message}`);
             }
         }
     };
@@ -185,10 +179,8 @@ function ClassDetail() {
             }));
             setEditingStudent(null);
             setEditingStudentName('');
-            toast.success('Данные студента обновлены');
         } catch (error) {
             console.error('Error updating student:', error);
-            toast.error(`Ошибка при обновлении данных студента: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -205,10 +197,8 @@ function ClassDetail() {
                     ...prevDetails,
                     assignments: (prevDetails.assignments || []).filter(a => a.id !== assignmentId)
                 }));
-                toast.success('Задание успешно удалено');
             } catch (error) {
                 console.error('Error removing assignment:', error);
-                toast.error(`Ошибка при удалении задания: ${error.response?.data?.detail || error.message}`);
             }
         }
     };
@@ -233,10 +223,8 @@ function ClassDetail() {
             }));
             setEditingAssignment(null);
             setEditingAssignmentTitle('');
-            toast.success('Задание успешно обновлено');
         } catch (error) {
             console.error('Error updating assignment:', error);
-            toast.error(`Ошибка при обновлении задания: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -289,10 +277,8 @@ function ClassDetail() {
             
             setEditingCell(null);
             setEditingGrade('');
-            toast.success('Оценка успешно обновлена');
         } catch (error) {
             console.error('Error updating grade:', error);
-            toast.error(`Ошибка при обновлении оценки: ${error.response?.data?.detail || error.message}`);
         }
     };
 
