@@ -3,6 +3,7 @@
 .vscode/
 *.swp
 *~
+.kiro/
 
 # Environment variables
 .env
