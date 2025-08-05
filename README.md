@@ -1,85 +1,55 @@
 # Professor AI Helper
 
-Welcome to the Professor AI Helper project! This is a full-stack web application designed to assist university professors by automating tasks related to educational materials using AI.
+A web application for managing educational documents and AI-powered content generation. Includes backend (FastAPI), frontend (React), and PostgreSQL database. Fully containerized for easy deployment.
 
-## Project Goal
+## Project Structure
+```
+professor-ai-helper/
+├── backend/
+├── frontend/
+├── docker-compose.yml
+├── .env.example
+```
 
-The primary goal is to develop a Minimum Viable Product (MVP) that allows professors to upload documents, generate educational content (tests, quizzes, summaries), and interact with an AI through a chat interface.
+## Quick Start (Docker)
 
-## Technology Stack
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd professor-ai-helper
+   ```
 
-*   **Frontend:** React (Vite), Tailwind CSS, Axios
-*   **Backend:** Python (FastAPI), SQLAlchemy
-*   **Database:** PostgreSQL
-*   **AI:** Google Gemini API
-*   **Containerization:** Docker & Docker Compose
+2. **Create .env file in the root directory** (example below):
+   ```env
+   POSTGRES_DB=professordb
+   POSTGRES_USER=professor
+   POSTGRES_PASSWORD=strongpassword123
+   DATABASE_URL=postgresql://professor:strongpassword123@db:5432/professordb
+   SECRET_KEY=a_very_secret_key_that_should_be_long_and_random
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=60
+   GOOGLE_API_KEY=AIzaSyCRcplZEHU6TrcwNSboq-1hyRti-FpPxYc
+   ```
 
-## Getting Started
+3. **Build and run all services**
+   ```bash
+   docker compose up --build
+   ```
 
-Follow these steps to get your development environment set up and running.
+4. **Open in browser:**
+   - Frontend: http://localhost:5173
+   - API docs: http://localhost:8000/docs
 
-### Prerequisites
+## Docker Images
+- Backend: `bobur0/professor-ai-backend:latest`
+- Frontend: `bobur0/professor-ai-frontend:latest`
 
-*   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
-*   [Node.js](https://nodejs.org/en/) (v18 or later) and npm
-*   A code editor like [VS Code](https://code.visualstudio.com/)
-
-### Setup Instructions
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone <your-repo-url>
-    cd professor-ai-helper
-    ```
-
-2.  **Create Project Structure:**
-    If you are starting from scratch, create the main directories:
-    ```bash
-    mkdir backend
-    mkdir frontend
-    ```
-
-3.  **Initialize Frontend:**
-    Navigate to the `frontend` directory and initialize a new React project using Vite. **It's important to do this before running Docker.**
-    ```bash
-    cd frontend
-    npm create vite@latest . -- --template react
-    # Follow the prompts. When it's done, you can go back to the root directory.
-    cd ..
-    ```
-
-4.  **Environment Variables:**
-    The project uses a `.env` file for configuration. I have already created this file for you with the necessary variables. You can review it to ensure the credentials are correct.
-
-5.  **Build and Run with Docker Compose:**
-    From the root directory (`professor-ai-helper/`), run the following command:
-    ```bash
-    docker compose up --build
-    ```
-    This command will build the Docker images for the frontend and backend services, start the containers, and set up the database. The first build might take a few minutes.
-
-6.  **Access the Application:**
-    *   **Frontend (React App):** [http://localhost:5173](http://localhost:5173)
-    *   **Backend (FastAPI Docs):** [http://localhost:8000/docs](http://localhost:8000/docs)
-
---- 
-*This README will be updated as we build more features.*
 ## Troubleshooting
+- Ensure Docker is running
+- Check that `.env` file is present and filled
+- For database errors, try removing Docker volumes and rebuilding
+- For API errors, check API key and backend logs
 
-### Common Issues
-
-1. **"Invalid document ID" error when viewing documents**
-   - Make sure the document ID in the URL is a valid positive integer
-   - Check that you have permission to access the document
-   - Try logging out and logging back in if your session may have expired
-
-2. **AI Assistant not responding**
-   - Verify that the GOOGLE_API_KEY environment variable is set correctly in your .env file
-   - Check the backend logs for any API errors
-   - Ensure your query is not too long (there are character limits)
-
-3. **File upload failures**
-   - Check that the file type is supported (PDF, DOCX, TXT)
    - Ensure the file size is not too large
    - Verify that the uploaded_files directory exists and has proper permissions
 
